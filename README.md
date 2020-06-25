@@ -31,11 +31,11 @@ Build for the i.MX6 QuadPlus Sabre Board
 MACHINE=imx6qpsabresd DISTRO=fsl-imx-fb source ./imx-setup-release.sh -b bld-fb
 ```
 
-You should use a different MACHINE such as imx6dlsabred if needed. For a list
+Note: You should use a different MACHINE such as imx6dlsabred if needed. For a list
 of additional machines, look the i.MX Yocto Project User's Guide PDF, which can
 be found in the latest Linux BSP downloads from NXP.
 
-Accept the EULA
+Accept the EULA. Finally you can build the image as follows:
 
 ```
 bitbake imx-image-core

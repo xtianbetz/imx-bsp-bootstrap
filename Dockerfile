@@ -23,12 +23,8 @@ RUN mkdir /home/yocto/bin && \
 RUN echo -en "[user]\n\temail = you@example.com\n\tname = Your Name\n[color]\n\tui = auto\n" > /home/yocto/.gitconfig && \
 	chown yocto.yocto /home/yocto/.gitconfig
 COPY enable-scl-devtoolset-7.sh /etc/profile.d
-
-# TODO: create ~/.gitconfig
-# [user]
-#	email = you@example.com
-#	name = Your Name
-
+# TODO: use docker-entrypoint to automatically change directory to /var/yocto
+#       and possibly do other stuff too
 #COPY docker-entrypoint.sh /usr/local/bin/
 #RUN ln -s /usr/local/bin/docker-entrypoint.sh / # backwards compat
 #ENTRYPOINT ["docker-entrypoint.sh"]
