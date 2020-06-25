@@ -8,11 +8,13 @@ docker build -t centos7-imx-yocto:zeus-latest .
 
 ## Enter the docker container
 
-```
-/enter-buildbox-container.sh /data/yocto/imx-yocto-bs
-```
+Enter the build container using the following command. The first argument is
+a local directory on your machine you want to use for build files and
+artifacts. The directory will be made for you if required.
 
-Note: the directory will be made for you if required.
+```
+./enter-build-container.sh /data/yocto/imx-yocto-bs
+```
 
 ## Building an Official BSP release
 
@@ -26,12 +28,13 @@ repo init -u https://source.codeaurora.org/external/imx/imx-manifest -b imx-linu
 repo sync
 ```
 
-Build for the i.MX6 QuadPlus Sabre Board
+Setup the build for the i.MX6 QuadPlus Sabre Board:
+
 ```
 MACHINE=imx6qpsabresd DISTRO=fsl-imx-fb source ./imx-setup-release.sh -b bld-fb
 ```
 
-Note: You should use a different MACHINE such as imx6dlsabred if needed. For a list
+Note: You should use a different MACHINE such as imx6dlsabresd if needed. For a list
 of additional machines, look the i.MX Yocto Project User's Guide PDF, which can
 be found in the latest Linux BSP downloads from NXP.
 
