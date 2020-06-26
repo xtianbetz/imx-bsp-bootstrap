@@ -46,6 +46,16 @@ Finally you can build the image as follows:
 bitbake imx-image-core
 ```
 
+## Fixes or Hacks you may need
+
+The 5.4.24-2.1.0 release seems to have an issue building the 'nxp-wlan-sdk'
+package. You can disable the machine feature that brings in this package by
+adding the following to 'conf/local.conf' (in the bld-fb directory)
+
+```
+MACHINE_FEATURES_remove = "nxp8987 "
+```
+
 ## Resources
 
 * [Official README](https://source.codeaurora.org/external/imx/imx-manifest/tree/README?h=imx-linux-zeus) that this repo was adapted from.
