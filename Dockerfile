@@ -19,12 +19,12 @@ RUN adduser yocto && \
 	echo -en "[user]\n\temail = you@example.com\n\tname = Your Name\n[color]\n\tui = auto\n" > /home/yocto/.gitconfig && \
 	chown yocto.yocto /home/yocto/.gitconfig
 
-# Install the official Yocto builtooks for Yocto 3.1 Dunfell
+# Install the official Yocto builtools for Yocto 3.0 Zeus
 RUN cd /tmp && \
-    wget http://downloads.yoctoproject.org/releases/yocto/yocto-3.1/buildtools/x86_64-buildtools-nativesdk-standalone-3.1.sh && \
-    chmod +x x86_64-buildtools-nativesdk-standalone-3.1.sh && \
-    ./x86_64-buildtools-nativesdk-standalone-3.1.sh -y && \
-	echo ". /opt/poky/3.1/environment-setup-x86_64-pokysdk-linux" >> /home/yocto/.bashrc && \
+    wget http://downloads.yoctoproject.org/releases/yocto/yocto-3.0/buildtools/x86_64-buildtools-nativesdk-standalone-3.0.sh && \
+    chmod +x x86_64-buildtools-nativesdk-standalone-3.0.sh && \
+    ./x86_64-buildtools-nativesdk-standalone-3.0.sh -y && \
+	echo ". /opt/poky/3.0/environment-setup-x86_64-pokysdk-linux" >> /home/yocto/.bashrc && \
 	echo "export LANG=en_US.UTF-8" >> /home/yocto/.bashrc
 
 # Add the 'repo' tool to the yocto user's $PATH
