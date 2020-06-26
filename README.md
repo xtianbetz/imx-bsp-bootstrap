@@ -13,7 +13,7 @@ a local directory on your machine you want to use for build files and
 artifacts. The directory will be made for you if required.
 
 ```
-./enter-build-container.sh /data/yocto/imx-yocto-bs
+./enter-build-container.sh /data/yocto/imx-yocto-bsp
 ```
 
 ## Building an Official BSP release
