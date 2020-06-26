@@ -22,16 +22,17 @@ Enter the docker container and execute the following commands:
 
 ```
 cd /var/yocto
-mkdir 5.4.3-2.0.0
-cd 5.4.3-2.0.0
-repo init -u https://source.codeaurora.org/external/imx/imx-manifest -b imx-linux-zeus -m imx-5.4.3-2.0.0.xml
+mkdir imx-5.4.24-2.1.0
+cd imx-5.4.24-2.1.0
+repo init -u https://source.codeaurora.org/external/imx/imx-manifest -b imx-linux-zeus -m imx-5.4.24-2.1.0.xml
 repo sync
 ```
 
-Setup the build for the i.MX6 QuadPlus Sabre Board:
+Setup the build for the [i.MX 6QP SABRE
+Board](https://www.nxp.com/design/development-boards/i-mx-evaluation-and-development-boards/sabre-board-for-smart-devices-based-on-the-i-mx-6quadplus-applications-processors:RD-IMX6QP-SABRE) using the imx6qpsabresd machine, and the fsl-imx-fb distro.
 
 ```
-MACHINE=imx6qpsabresd DISTRO=fsl-imx-fb source ./imx-setup-release.sh -b bld-fb
+MACHINE=imx6qpsabresd DISTRO=fsl-imx-wayland source ./imx-setup-release.sh -b bld-wayland
 ```
 
 Note: You should use a different MACHINE such as imx6dlsabresd if needed. For
@@ -49,12 +50,30 @@ bitbake imx-image-core
 ## Fixes or Hacks you may need
 
 The 5.4.24-2.1.0 release seems to have an issue building the 'nxp-wlan-sdk'
-package. You can disable the machine feature that brings in this package by
-adding the following to 'conf/local.conf' (in the bld-fb directory)
+package. You may need to disable the machine feature that brings in this
+package by adding the following to 'conf/local.conf' (in the bld-wayland
+directory)
 
 ```
 MACHINE_FEATURES_remove = "nxp8987 "
 ```
+
+## Writing an image to eMMC using uuu
+
+* install a prebuilt uuu or build/install uuu on your machine
+* make a new directory on your machine (i.e. $HOME/imx-uuu-workspace)
+* grab the u-boot.imx and rootfs.wic.bz2 files from the tmp/deploy/images/$MACHINE directory
+* copy 'uuu.auto' from this repo to $YOUR_WORKSPACE_DIRECTORY
+* edit uuu.auto and change the filenames, or create symlinks to the files you
+  downloaded so you don't have to edit uuu.auto in multiple places.
+* power up board in programming mode using dip switches
+* run 'uuu $YOUR_WORKSPACE_DIRECTORY' to program the eMMC. The commands in the uuu.auto
+  file will be executed (if applicable).
+* When uuu is done, remove power to the board and set dip switches to eMMC.
+* Power on board. You can check the build date on the u-boot serial console
+  output to confirm you have built the right stuff!
+
+TODO: more detailed instructions with examples, links, tips on building uuu.
 
 ## Resources
 
