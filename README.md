@@ -1,8 +1,18 @@
 # Instructions
 
+## Clone this repo
+
+Go to the directory where you keep want to keep code and clone this repo:
+
+```
+cd $MY_CODE_DIRECTORY
+git clone https://github.com/xtianbetz/imx-bsp-bootstrap.git
+```
+
 ## Build the docker container
 
 ```
+cd imx-bsp-bootstrap
 docker build -t centos7-imx-yocto:zeus-latest .
 ```
 
