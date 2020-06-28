@@ -203,4 +203,4 @@ SRC_URI_append.
 ## Resources
 
 * [Official README](https://source.codeaurora.org/external/imx/imx-manifest/tree/README?h=imx-linux-zeus) that this repo was adapted from.
-**** [Creating your own Bitbake Layer](https://www.yoctoproject.org/docs/latest/dev-manual/dev-manual.html#creating-your-own-layer)
+* [Creating your own Bitbake Layer](https://www.yoctoproject.org/docs/latest/dev-manual/dev-manual.html#creating-your-own-layer)
