@@ -32,9 +32,9 @@ Enter the docker container and execute the following commands:
 
 ```
 cd /var/yocto
-mkdir imx-5.4.24-2.1.0
-cd imx-5.4.24-2.1.0
-repo init -u https://source.codeaurora.org/external/imx/imx-manifest -b imx-linux-zeus -m imx-5.4.24-2.1.0.xml
+mkdir imx-5.4.3-2.0.0
+cd imx-5.4.3-2.0.0/
+repo init -u https://source.codeaurora.org/external/imx/imx-manifest -b imx-linux-zeus -m imx-5.4.3-2.0.0.xml
 repo sync
 ```
 
@@ -60,12 +60,12 @@ bitbake imx-image-core
 NOTE: This process will take at least a half hour on a very fast multicore
 machine and will use close to 100GB of disk space.
 
-## Fixes or Hacks you may need
+## Workarounds you may need
 
 The 5.4.24-2.1.0 release seems to have an issue building the 'nxp-wlan-sdk'
 package. You may need to disable the machine feature that brings in this
 package by adding the following to 'conf/local.conf' (in the bld-wayland
-directory)
+directory). The 5.4.3-2.0.0 release seems to build fine without this workaround.
 
 ```
 MACHINE_FEATURES_remove = "nxp8987 "
@@ -192,16 +192,10 @@ mkdir ../sources/meta-imx6example/conf/machine
 cp ../sources/meta-imx/meta-bsp/conf/machine/imx6qpsabresd.conf ../sources/meta-imx6example/conf/machine/imx6example.conf
 ```
 
-Edit the imx6example.conf and comment out all lines with 'optee' or 'OPTEE'
-(OPTEE is a secure-enclave OS used for secure computations and secret storage;
-disabling it will help us ignore some build errors associated with the custom
-board). We also make some other changes for making this machine compatible with
-u-boot-imx and setting IMAGE_BOOT_FILES.
-
-Your imx6example.conf should look like this when done:
+Edit the imx6example.conf file. Your imx6example.conf should look like this when done:
 
 ```
-@TYPE: Machine
+#@TYPE: Machine
 #@NAME: NXP i.MX6Q Plus SABRE Smart Device
 #@SOC: i.MX6QP
 #@DESCRIPTION: Machine configuration for NXP i.MX6QP SABRE Smart Device
@@ -214,22 +208,22 @@ include conf/machine/include/imx6sabresd-common.inc
 KERNEL_DEVICETREE = "imx6qp-sabresd.dtb imx6qp-sabresd-btwifi.dtb imx6qp-sabresd-hdcp.dtb \
                      imx6qp-sabresd-ldo.dtb"
 
+# imx6example customization #1: Disable optee
 #MACHINE_FEATURES_append = " optee"
 
-#UBOOT_CONFIG ??= "${@bb.utils.contains('MACHINE_FEATURES', 'optee', 'sd-optee', 'sd', d)}"
-# Add this line to set a default u-boot configuration
-UBOOT_CONFIG ??= "sd"
+UBOOT_CONFIG ??= "${@bb.utils.contains('MACHINE_FEATURES', 'optee', 'sd-optee', 'sd', d)}"
 UBOOT_CONFIG[sd] = "mx6qpsabresd_config,sdcard"
 UBOOT_CONFIG[sata] = "mx6qpsabresd_sata_config"
 UBOOT_CONFIG[mfgtool] = "mx6qpsabresd_config"
-#UBOOT_CONFIG[sd-optee] = "mx6qpsabresd_optee_config,sdcard"
+UBOOT_CONFIG[sd-optee] = "mx6qpsabresd_optee_config,sdcard"
 
-#OPTEE_BIN_EXT = "6qpsdb"
+OPTEE_BIN_EXT = "6qpsdb"
 
-# Add compatible machine so we can use u-boot-imx
+# imx6example customization #2: declare our machine compatible with u-boot-imx
 COMPATIBLE_MACHINE_u-boot-imx = "(mx6|mx7|mx8|imx6example)"
 
-# Override IMAGE_BOOT_FILES to workaround build errors
+# imx6example customization #3:Change Override IMAGE_BOOT_FILES to
+# workaround build errors (only needed for 5.4.24-2.1.0)
 IMAGE_BOOT_FILES = " \
     ${KERNEL_IMAGETYPE} \
     ${KERNEL_DEVICETREE} \
@@ -240,10 +234,11 @@ Check your work on this step by rebuilding imx-image-core, this time overriding
 the machine with your custom machine:
 
 ```
-MACHINE=imx6example bitbake -e imx-image-core
+MACHINE=imx6example bitbake imx-image-core
 ```
 
-Use 'uuu' to load it on the SABRE Board again.
+Use 'uuu' to load it on the SABRE Board again. You should see your new machine
+printed on the console (i.e. when logging into Linux).
 
 ### Adding u-boot customizations
 
