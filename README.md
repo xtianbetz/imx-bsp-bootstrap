@@ -86,7 +86,51 @@ MACHINE_FEATURES_remove = "nxp8987 "
 * Power on board. You can check the build date on the u-boot serial console
   output to confirm you have built the right stuff!
 
-TODO: more detailed instructions with examples, links, tips on building uuu.
+#### Example of using uuu:
+
+```
+cd $YOUR_WORKING_DIRECTORY
+mkdir 5.4.3-2.0.0-imx6qpsabresd
+cd 5.4.3-2.0.0-imx6qpsabresd
+```
+
+Copy the u-boot and wic.bz2 images from the build machine:
+```
+scp buildmachine:/data/yocto/imx-yocto-bsp/imx-5.4.3-2.0.0/bld-wayland/tmp/deploy/images/imx6qpsabresd/u-boot-sd-optee-2019.04-r0.imx .
+scp buildmachine:/data/yocto/imx-yocto-bsp/imx-5.4.3-2.0.0/bld-wayland/tmp/deploy/images/imx6qpsabresd/imx-image-core-imx6qpsabresd-20200628215652.rootfs.wic.bz2 .
+```
+
+Extract the compressed disk image file:
+
+```
+bunzip2 imx-image-core-imx6qpsabresd-20200628215652.rootfs.wic.bz2
+```
+
+Copy the template uuu.auto script from this repo:
+```
+cp $MY_CODE_DIRECTORY/imx-bsp-bootstrap/uuu.auto .
+```
+
+Create symlinks so you can use the uuu.auto script without editing it:
+```
+ln -sf u-boot-sd-optee-2019.04-r0.imx u-boot.bin
+ln -sf imx-image-core-imx6qpsabresd-20200628215652.rootfs.wic disk-image.wic
+```
+
+Finally, power on the board and run 'uuu' with the directory you created as an
+argument. Remember to force serial download mode by setting the DIP switches to
+boot from SD card and remove the SD card (for example).
+
+```
+cd ..
+sudo uuu 5.4.3-2.0.0-imx6qpsabresd
+```
+
+If you are monitoring the serial output in a terminal emulater you will be able
+to confirm that the download process is running.
+
+After 'uuu' completes, you can power down the board and set the DIP switches to
+eMMC boot. You should see u-boot boot, and then Linux.
 
 ## Creating a custom board layer
 

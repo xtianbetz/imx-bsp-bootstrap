@@ -1,17 +1,17 @@
 uuu_version 1.2.39
 
 # This command will be run when i.MX6/7 i.MX8MM, i.MX8MQ
-SDP: boot -f u-boot-imx6qpsabresd_sd.imx
+SDP: boot -f u-boot.bin
 
 # This command will be run when ROM support stream mode
 # i.MX8QXP, i.MX8QM
-SDPS: boot -f u-boot-imx6qpsabresd_sd.imx
+SDPS: boot -f u-boot.bin
 
 # These commands will be run when use SPL and will be skipped if no spl
 # SDPU will be deprecated. please use SDPV instead of SDPU
 # {
 SDPU: delay 1000
-SDPU: write -f u-boot-imx6qpsabresd_sd.imx -offset 0x57c00
+SDPU: write -f u-boot.bin -offset 0x57c00
 SDPU: jump
 # }
 
@@ -19,15 +19,15 @@ SDPU: jump
 # if (SPL support SDPV)
 # {
 SDPV: delay 1000
-SDPV: write -f u-boot-imx6qpsabresd_sd.imx -skipspl
+SDPV: write -f u-boot.bin -skipspl
 SDPV: jump
 # }
 
 FB: ucmd setenv fastboot_dev mmc
 FB: ucmd setenv mmcdev ${emmc_dev}
 FB: ucmd mmc dev ${emmc_dev}
-FB: flash -raw2sparse all imx-image-multimedia-imx6qpdlsolox.wic
-FB: flash bootloader u-boot-imx6qpsabresd_sd.imx
+FB: flash -raw2sparse all disk-image.wic
+FB: flash bootloader u-boot.bin 
 FB: ucmd if env exists emmc_ack; then ; else setenv emmc_ack 0; fi;
 FB: ucmd mmc partconf ${emmc_dev} ${emmc_ack} 1 0
 FB: done
