@@ -112,14 +112,14 @@ LAYERVERSION_imx6example = "4"
 LAYERSERIES_COMPAT_imx6example = "zeus"
 ```
 
-Finally, edit conf/bblayers.conf and add your layer:
+Finally, edit conf/bblayers.conf and add your layer on the last line:
 
 ```
 BBLAYERS += "${BSPDIR}/sources/meta-imx6example"
 ```
 
-Perform another quick 'bitbake imx-image-core' to confirm syntax looks good and
-also confirm your layer is being picked up. You will see a warning like this:
+Perform another 'bitbake imx-image-core' to confirm your
+your layer is being picked up correctly. You will see a warning like this:
 
 ```
 WARNING: No bb files matched BBFILE_PATTERN_imx6example '^/var/yocto/imx-5.4.24-2.1.0/sources/meta-imx6example/'
@@ -181,8 +181,14 @@ IMAGE_BOOT_FILES = " \
 "
 ```
 
-Check your work on this step by rebuilding imx-image-core and use 'uuu' to load it
-on the SABRE Board again.
+Check your work on this step by rebuilding imx-image-core, this time overriding
+the machine with your custom machine:
+
+```
+MACHINE=imx6example bitbake -e imx-image-core
+```
+
+Use 'uuu' to load it on the SABRE Board again.
 
 ### Adding u-boot customizations
 
