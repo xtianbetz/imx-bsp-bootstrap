@@ -173,7 +173,8 @@ BBLAYERS += "${BSPDIR}/sources/meta-imx6example"
 ```
 
 Perform another 'bitbake imx-image-core' to confirm your
-your layer is being picked up correctly. You will see a warning like this:
+layer is being picked up correctly. This time the build should only take
+a minute or so. You will see a warning like this:
 
 ```
 WARNING: No bb files matched BBFILE_PATTERN_imx6example '^/var/yocto/imx-5.4.24-2.1.0/sources/meta-imx6example/'
