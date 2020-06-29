@@ -7,20 +7,35 @@ Go to the directory where you want to keep code and clone this repo:
 ```
 cd $MY_CODE_DIRECTORY
 git clone https://github.com/xtianbetz/imx-bsp-bootstrap.git
+cd imx-bsp-bootstrap
 ```
 
 ## Build the docker container
 
+A Docker container is used to make reproducing the build environment as easy as
+possible. The first step is therefore to run 'docker build' and create
+a fully-equipped build container. Look closer at the 'Dockerfile' in this repo
+if you want to know more about setting up a build host.
+
+Build the container with the following command:
+
 ```
-cd imx-bsp-bootstrap
 docker build -t centos7-imx-yocto:zeus-latest .
 ```
 
-## Enter the docker container
+## Enter the build container
 
-Enter the build container using the following command. The first argument is
-a local directory on your machine you want to use for build files and
-artifacts. The directory will be made for you if required.
+Enter the build container using the following helper script. The first argument
+is a local "workspace" directory that you want to use for build files and
+artifacts. The directory will be made for you if required. Remember that this
+location must have at least 100GB of disk space free.
+
+```
+./enter-build-container.sh $MY_WORKSPACE_DIRECTORY
+```
+
+For example, if you have a large disk mounted as /data, you may have
+a workspace directory there and use it like so:
 
 ```
 ./enter-build-container.sh /data/yocto/imx-yocto-bsp
@@ -30,11 +45,28 @@ artifacts. The directory will be made for you if required.
 
 Enter the docker container and execute the following commands:
 
+Change directory to /var/yocto (which is actually also $MY_WORKSPACE_DIRECTORY
+on the container host):
 ```
 cd /var/yocto
+```
+
+Make a directory for the release you are building:
+
+```
 mkdir imx-5.4.3-2.0.0
 cd imx-5.4.3-2.0.0/
+```
+
+Initialize the repo by downloading the appropriate pinned BSP release XML.
+
+```
 repo init -u https://source.codeaurora.org/external/imx/imx-manifest -b imx-linux-zeus -m imx-5.4.3-2.0.0.xml
+```
+
+Download all layers and recipes:
+
+```
 repo sync
 ```
 
@@ -57,7 +89,7 @@ Finally you can build the image as follows:
 bitbake imx-image-core
 ```
 
-NOTE: This process will take at least a half hour on a very fast multicore
+NOTE: This process will take at least a half hour on a very fast multi-core
 machine and will use close to 100GB of disk space.
 
 ## Workarounds you may need
@@ -73,6 +105,8 @@ MACHINE_FEATURES_remove = "nxp8987 "
 
 ## Writing an image to eMMC using uuu
 
+### General Process of using UUU
+
 * install a prebuilt uuu or build/install uuu on your machine
 * make a new directory on your machine (i.e. $HOME/imx-uuu-workspace)
 * grab the u-boot.imx and rootfs.wic.bz2 files from the tmp/deploy/images/$MACHINE directory
@@ -86,18 +120,24 @@ MACHINE_FEATURES_remove = "nxp8987 "
 * Power on board. You can check the build date on the u-boot serial console
   output to confirm you have built the right stuff!
 
-#### Example of using uuu:
+#### Example of using UUU
+
+You can use 'uuu' easily by placing the files from the Yocto deploy directory
+into a directory along with the uuu.auto script file from this repo.
 
 ```
-cd $YOUR_WORKING_DIRECTORY
-mkdir 5.4.3-2.0.0-imx6qpsabresd
-cd 5.4.3-2.0.0-imx6qpsabresd
+cd $MY_WORKSPACE_DIRECTORY
+mkdir imx-5.4.3-2.0.0-imx6qpsabresd
+cd imx-5.4.3-2.0.0-imx6qpsabresd
 ```
 
-Copy the u-boot and wic.bz2 images from the build machine:
+If you're running the build container on a VM or another machine, you should
+copy the files you want to write to eMMC now. Otherwise you can just copy the
+files directly from $MY_WORKSPACE_DIRECTORY.
+
 ```
-scp buildmachine:/data/yocto/imx-yocto-bsp/imx-5.4.3-2.0.0/bld-wayland/tmp/deploy/images/imx6qpsabresd/u-boot-sd-optee-2019.04-r0.imx .
-scp buildmachine:/data/yocto/imx-yocto-bsp/imx-5.4.3-2.0.0/bld-wayland/tmp/deploy/images/imx6qpsabresd/imx-image-core-imx6qpsabresd-20200628215652.rootfs.wic.bz2 .
+scp $MY_BUILD_MACHINE_HOSTNAME:/data/yocto/imx-yocto-bsp/imx-5.4.3-2.0.0/bld-wayland/tmp/deploy/images/imx6qpsabresd/u-boot-sd-optee-2019.04-r0.imx .
+scp $MY_BUILD_MACHINE_HOSTNAME:/data/yocto/imx-yocto-bsp/imx-5.4.3-2.0.0/bld-wayland/tmp/deploy/images/imx6qpsabresd/imx-image-core-imx6qpsabresd-20200628215652.rootfs.wic.bz2 .
 ```
 
 Extract the compressed disk image file:
@@ -126,7 +166,7 @@ cd ..
 sudo uuu 5.4.3-2.0.0-imx6qpsabresd
 ```
 
-If you are monitoring the serial output in a terminal emulater you will be able
+If you are monitoring the serial output in a terminal emulator you will be able
 to confirm that the download process is running.
 
 After 'uuu' completes, you can power down the board and set the DIP switches to
@@ -142,14 +182,14 @@ Create a new bitbake layer to start adding customizations:
 mkdir -p ../sources/meta-imx6example/conf
 ```
 
-Use your favorite text editor (vim/nano/emacs/etc) to create and edit the
+Use your favorite text editor (vim/nano/emacs/etc) to create and edit
 a new layer.conf file:
 
 ```
 $YOUR_FAVORITE_EDITOR ../sources/meta-imx6example/conf/layer.conf
 ```
 
-The layer.conf file should have contents that looks like this:
+The layer.conf file should have the following contents:
 
 ```
 # We have a conf and classes directory, add to BBPATH
@@ -174,7 +214,7 @@ BBLAYERS += "${BSPDIR}/sources/meta-imx6example"
 
 Perform another 'bitbake imx-image-core' to confirm your
 layer is being picked up correctly. This time the build should only take
-a minute or so. You will see a warning like this:
+a minute or so. You should see a warning like this:
 
 ```
 WARNING: No bb files matched BBFILE_PATTERN_imx6example '^/var/yocto/imx-5.4.24-2.1.0/sources/meta-imx6example/'
@@ -204,7 +244,7 @@ Edit the imx6example.conf file. Your imx6example.conf should look like this when
 #@NAME: NXP i.MX6Q Plus SABRE Smart Device
 #@SOC: i.MX6QP
 #@DESCRIPTION: Machine configuration for NXP i.MX6QP SABRE Smart Device
-#@MAINTAINER: Lauren Post <lauren.post@nxp.com>
+#@MAINTAINER: Your Name <your.name@organization.com>
 
 MACHINEOVERRIDES =. "mx6:mx6q:"
 
@@ -268,7 +308,7 @@ It should look something like this when done:
 #@NAME: NXP i.MX6DL SABRE Smart Device
 #@SOC: i.MX6DL
 #@DESCRIPTION: Machine configuration for NXP i.MX6DL SABRE Smart Device
-#@MAINTAINER: Otavio Salvador <otavio@ossystems.com.br>
+#@MAINTAINER: Your Name <your.name@organization.com>
 
 MACHINEOVERRIDES =. "mx6:mx6dl:"
 
@@ -301,9 +341,9 @@ the machine with your custom machine:
 MACHINE=imx6dlexample bitbake imx-image-core
 ```
 
-You should get a clean build. However, this time you will not use 'uuu' to load it
-on the SABRE Board because that has an i.MX6Q. Go to the next section where we
-will create u-boot patches for your custom board.
+You should get a clean build. However, this time you will not use 'uuu' to load
+it on the SABRE Board because that has an i.MX6Q SoC, not an i.MX6DL. Go to the
+next section where we will create u-boot patches for a custom i.MX6DL board.
 
 ### Adding u-boot customizations
 
@@ -311,21 +351,22 @@ A custom board will almost certainly require a patch for u-boot-imx, with custom
 device configuration data (DCD), devicetree configuration, etc. Imagine you have
 created this patch with the filename u-boot-imx-imx6dlexample.patch.
 
-First we're going to create some directories to organize our bitbake recipe append
-file (bbappend) and u-boot patch.
+First we're going to create some directories within our new layer to organize
+our bitbake recipe append file (bbappend) and u-boot patch.
 
 ```
 mkdir -p ../sources/meta-imx6example/recipes-bsp/u-boot-imx
 mkdir -p ../sources/meta-imx6example/recipes-bsp/u-boot-imx/imx6dlexample
 ```
 
-Next we'll create a new bbappend file:
+Next we'll create a new bbappend file. This file will instruct bitbake to apply
+a special patch for this machine only.
 
 ```
 $YOUR_FAVORITE_EDITOR ../sources/meta-imx6example/recipes-bsp/u-boot-imx/u-boot-imx_%.bbappend
 ```
 
-The bbappend should look like this:
+The bbappend file should look like this:
 
 ```
 # Add a special patch for the imx6dlexample machine
@@ -335,21 +376,23 @@ SRC_URI_append_imx6dlexample = " file://u-boot-imx-imx6dlexample.patch"
 FILESEXTRAPATHS_prepend := "${THISDIR}:"
 ```
 
-Now copy your patch into place:
+Now copy your patch into place. For instance you can put the patch temporarily
+on the container host machine in $MY_WORKSPACE_DIRECTORY. This way  it is
+accessible in the build container (from /var/yocto).
 
 ```
 cp /var/yocto/u-boot-imx-imx6dlexample.patch ../sources/meta-imx6example/recipes-bsp/u-boot-imx/imx6dlexample/
 ```
 
-Finally, attempt to build an image for you machine.
+Finally, attempt to build an image for your new patched machine.
 
 ```
 MACHINE=imx6dlexample bitbake imx-image-core
 ```
 
-At this point, you can try loading the image again with 'uuu'. It will likely
-or possibly not boot Linux correctly though you can confirm at least that you
-have a working u-boot.
+At this point, you can try copying files again and loading the image again with
+'uuu'. It will likely or possibly not boot Linux correctly though you can
+confirm at least that you have a working u-boot.
 
 ### Adding kernel customizations.
 
