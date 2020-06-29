@@ -182,13 +182,18 @@ WARNING: No bb files matched BBFILE_PATTERN_imx6example '^/var/yocto/imx-5.4.24-
 
 Don't worry about this warning because we're going to add some BB files in the next steps.
 
-### Create a new board config
+### Create a new board config based on the i.MX6QP
 
 We'll start by copying the configuration of the i.MX6QP SABRE board into a new
-machine conf. The new MACHINE will be called 'imx6example'.
+machine conf. The new MACHINE will be called 'imx6example'. This section will
+create a machine which differs from the 'imx6qpsabresd' in name only. It will
+produce a nearly identical image as the previous steps, though the machine name
+will appear in the console output so you can confirm you are moving in the right
+direction. We'll gain confidence building this custom machine and then make
+more customizations later for a custom board based on the iMX6DL.
 
 ```
-mkdir ../sources/meta-imx6example/conf/machine
+mkdir -p ../sources/meta-imx6example/conf/machine
 cp ../sources/meta-imx/meta-bsp/conf/machine/imx6qpsabresd.conf ../sources/meta-imx6example/conf/machine/imx6example.conf
 ```
 
@@ -240,10 +245,111 @@ MACHINE=imx6example bitbake imx-image-core
 Use 'uuu' to load it on the SABRE Board again. You should see your new machine
 printed on the console (i.e. when logging into Linux).
 
+### Create a new board config based on the i.MX6DL
+
+If your custom board is based in the i.MX6DL, you should copy it's
+machine.conf. In this case we're making a new MACHINE called 'imx6dlexample'.
+
+```
+mkdir -p ../sources/meta-imx6example/conf/machine
+cp ../sources/meta-imx/meta-bsp/conf/machine/imx6dlsabresd.conf ../sources/meta-imx6example/conf/machine/imx6dlexample.conf
+```
+
+Again, edit the machine configuration file:
+
+```
+$YOUR_FAVORITE_EDITOR ../sources/meta-imx6example/conf/machine/imx6dlexample.conf
+```
+
+It should look something like this when done:
+
+```
+#@TYPE: Machine
+#@NAME: NXP i.MX6DL SABRE Smart Device
+#@SOC: i.MX6DL
+#@DESCRIPTION: Machine configuration for NXP i.MX6DL SABRE Smart Device
+#@MAINTAINER: Otavio Salvador <otavio@ossystems.com.br>
+
+MACHINEOVERRIDES =. "mx6:mx6dl:"
+
+require conf/machine/include/imx6sabresd-common.inc
+
+KERNEL_DEVICETREE = "imx6dl-sabresd.dtb imx6dl-sabresd-ldo.dtb imx6dl-sabresd-hdcp.dtb \
+                     imx6dl-sabresd-enetirq.dtb imx6dl-sabresd-btwifi.dtb"
+
+# imx6example customization #1: Disable optee
+#MACHINE_FEATURES_append = " optee"
+
+UBOOT_CONFIG ??= "${@bb.utils.contains('MACHINE_FEATURES', 'optee', 'sd-optee', 'sd', d)}"
+UBOOT_CONFIG[sd] = "mx6dlsabresd_config,sdcard"
+UBOOT_CONFIG[epdc] = "mx6dlsabresd_epdc_config"
+UBOOT_CONFIG[mfgtool] = "mx6dlsabresd_config"
+UBOOT_CONFIG[sd-optee] = "mx6dlsabresd_optee_config,sdcard"
+
+OPTEE_BIN_EXT = "6dlsdb"
+
+MACHINE_FIRMWARE += "firmware-imx-epdc"
+
+# imx6example customization #2: declare our machine compatible with u-boot-imx
+COMPATIBLE_MACHINE_u-boot-imx = "(mx6|mx7|mx8|imx6dlexample)"
+```
+
+Check your work on this step by rebuilding imx-image-core, this time overriding
+the machine with your custom machine:
+
+```
+MACHINE=imx6dlexample bitbake imx-image-core
+```
+
+You should get a clean build. However, this time you will not use 'uuu' to load it
+on the SABRE Board because that has an i.MX6Q. Go to the next section where we
+will create u-boot patches for your custom board.
+
 ### Adding u-boot customizations
 
-TODO: explain how to make bbappend for u-boot-imx and add patches using
-SRC_URI_append.
+A custom board will almost certainly require a patch for u-boot-imx, with custom
+device configuration data (DCD), devicetree configuration, etc. Imagine you have
+created this patch with the filename u-boot-imx-imx6dlexample.patch.
+
+First we're going to create some directories to organize our bitbake recipe append
+file (bbappend) and u-boot patch.
+
+```
+mkdir -p ../sources/meta-imx6example/recipes-bsp/u-boot-imx
+mkdir -p ../sources/meta-imx6example/recipes-bsp/u-boot-imx/imx6dlexample
+```
+
+Next we'll create a new bbappend file:
+
+```
+$YOUR_FAVORITE_EDITOR ../sources/meta-imx6example/recipes-bsp/u-boot-imx/u-boot-imx_%.bbappend
+```
+
+The bbappend should look like this:
+
+```
+# Add a special patch for the imx6dlexample machine
+SRC_URI_append_imx6dlexample = " file://u-boot-imx-imx6dlexample.patch"
+
+# Tell bitbake to search this directory for additional u-boot patches
+FILESEXTRAPATHS_prepend := "${THISDIR}:"
+```
+
+Now copy your patch into place:
+
+```
+cp /var/yocto/u-boot-imx-imx6dlexample.patch ../sources/meta-imx6example/recipes-bsp/u-boot-imx/imx6dlexample/
+```
+
+Finally, attempt to build an image for you machine.
+
+```
+MACHINE=imx6dlexample bitbake imx-image-core
+```
+
+At this point, you can try loading the image again with 'uuu'. It will likely
+or possibly not boot Linux correctly though you can confirm at least that you
+have a working u-boot.
 
 ### Adding kernel customizations.
 
