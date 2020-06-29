@@ -2,7 +2,7 @@
 
 ## Clone this repo
 
-Go to the directory where you keep want to keep code and clone this repo:
+Go to the directory where you want to keep code and clone this repo:
 
 ```
 cd $MY_CODE_DIRECTORY
