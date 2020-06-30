@@ -403,3 +403,5 @@ SRC_URI_append.
 
 * [Official README](https://source.codeaurora.org/external/imx/imx-manifest/tree/README?h=imx-linux-zeus) that this repo was adapted from.
 * [Creating your own Bitbake Layer](https://www.yoctoproject.org/docs/latest/dev-manual/dev-manual.html#creating-your-own-layer)
+* [How to use UUU to flash the iMX boards](https://imxdev.gitlab.io/tutorial/How_to_use_UUU_to_flash_the_iMX_boards/)
+* [Booting a single image on different mx6sabresd boards](https://imxdev.gitlab.io/tutorial/Booting_a_single_image_on_different_mx6sabresd_boards/) explanation of what DCD tables are along with an explanation of SPL u-boot (which you may choose to use).
