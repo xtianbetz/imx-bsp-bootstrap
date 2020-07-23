@@ -136,8 +136,8 @@ copy the files you want to write to eMMC now. Otherwise you can just copy the
 files directly from $MY_WORKSPACE_DIRECTORY.
 
 ```
-scp $MY_BUILD_MACHINE_HOSTNAME:/data/yocto/imx-yocto-bsp/imx-5.4.3-2.0.0/bld-wayland/tmp/deploy/images/imx6qpsabresd/u-boot-sd-optee-2019.04-r0.imx .
-scp $MY_BUILD_MACHINE_HOSTNAME:/data/yocto/imx-yocto-bsp/imx-5.4.3-2.0.0/bld-wayland/tmp/deploy/images/imx6qpsabresd/imx-image-core-imx6qpsabresd-20200628215652.rootfs.wic.bz2 .
+scp $MY_BUILD_MACHINE_HOSTNAME:$MY_WORKSPACE_DIRECTORY/imx-5.4.3-2.0.0/bld-wayland/tmp/deploy/images/imx6qpsabresd/u-boot-sd-optee-2019.04-r0.imx .
+scp $MY_BUILD_MACHINE_HOSTNAME:$MY_WORKSPACE_DIRECTORY/imx-5.4.3-2.0.0/bld-wayland/tmp/deploy/images/imx6qpsabresd/imx-image-core-imx6qpsabresd-20200628215652.rootfs.wic.bz2 .
 ```
 
 Extract the compressed disk image file:
@@ -396,8 +396,56 @@ confirm at least that you have a working u-boot.
 
 ### Adding kernel customizations.
 
-TODO: explain how to make bbappend for linux-imx and add patches using
-SRC_URI_append.
+Create some directories to put your kernel customization in:
+
+```
+mkdir -p ../sources/meta-imx6example/recipes-bsp/linux-imx
+mkdir -p ../sources/meta-imx6example/recipes-bsp/linux-imx/imx6dlexample
+```
+
+Create a custom bbappened file to customize the kernel recipe:
+
+```
+$YOUR_FAVORITE_EDITOR ../sources/meta-imx6example/recipes-bsp/linux-mx/linux-imx_%.bbappend
+```
+
+The contents of the file should look something like this:
+
+```
+# Add a special patch for the imx6dlexample machine
+SRC_URI_append_imx6dlexample = " file://linux-imx-imx6dlexample.patch"
+
+# Tell bitbake to search this directory for additional patches
+FILESEXTRAPATHS_prepend := "${THISDIR}:"
+```
+
+Finally, you should create and/or copy your custom board patch into place.
+Imagine you have your kernel source on different machine as a git repository.
+First generate a patch using git wherever you have your kernel source. In this
+example, we are generating a patch of our own code against the 'lf-5.4.y'
+branch which is being used by the official BSP:
+
+```
+cd $MY_LINUX_KERNEL_SOURCE_DIR
+git diff lf-5.4.y > /tmp/linux-imx-imx6dlexample.patch
+```
+
+Copy your generated patch to the build machine and into the build container
+```
+scp /tmp/linux-imx-imx6dlexample.patch $MY_BUILD_MACHINE_HOSTNAME:$MY_WORKSPACE_DIRECTORY
+```
+
+Back inside the container you can now copy the patch into place:
+
+```
+cp /var/yocto/linux-imx-imx6dlexample.patch ../sources/meta-imx6example/recipes-bsp/u-boot-imx/imx6dlexample/
+```
+
+Build another image for your new patched machine.
+
+```
+MACHINE=imx6dlexample bitbake imx-image-core
+```
 
 ## Resources
 
