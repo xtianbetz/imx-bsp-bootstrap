@@ -6,7 +6,7 @@ RUN yum install -y epel-release && \
     yum install -y gawk make wget tar bzip2 gzip python unzip perl patch \
     diffutils diffstat git cpp gcc gcc-c++ glibc-devel texinfo chrpath socat \
     perl-Data-Dumper perl-Text-ParseWords perl-Thread-Queue python3-pip xz \
-    which SDL-devel xterm file tmux screen libunwind strace bc && \
+    which SDL-devel xterm file tmux screen libunwind strace bc ncurses-devel && \
     yum clean all && \
     pip3 install GitPython jinja2
 
@@ -36,11 +36,10 @@ RUN mkdir /home/yocto/bin && \
 # Enable additional dev tools
 COPY enable-scl-devtoolset-7.sh /etc/profile.d
 
-# TODO: use docker-entrypoint to automatically change directory to /var/yocto
-#       and possibly do other stuff too
-#COPY docker-entrypoint.sh /usr/local/bin/
-#RUN ln -s /usr/local/bin/docker-entrypoint.sh / # backwards compat
-#ENTRYPOINT ["docker-entrypoint.sh"]
+# Entrypoint for automatic build environment setup
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN ln -s /usr/local/bin/docker-entrypoint.sh / # backwards compat
+ENTRYPOINT ["docker-entrypoint.sh"]
 
 USER yocto:yocto
 CMD ["bash"]

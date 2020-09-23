@@ -35,55 +35,19 @@ location must have at least 100GB of disk space free.
 ```
 
 For example, if you have a large disk mounted as /data, you may have
-a workspace directory there and use it like so:
+want a yocto workspace directory there and you can use it like so:
 
 ```
 ./enter-build-container.sh /data/yocto/imx-yocto-bsp
 ```
 
+An initial environment should be setup for you. You will be prompted to accept
+a EULA agreement.
+
 ## Building an Official BSP release
 
-Enter the docker container and execute the following commands:
-
-Change directory to /var/yocto (which is actually also $MY_WORKSPACE_DIRECTORY
-on the container host):
-```
-cd /var/yocto
-```
-
-Make a directory for the release you are building:
-
-```
-mkdir imx-5.4.3-2.0.0
-cd imx-5.4.3-2.0.0/
-```
-
-Initialize the repo by downloading the appropriate pinned BSP release XML.
-
-```
-repo init -u https://source.codeaurora.org/external/imx/imx-manifest -b imx-linux-zeus -m imx-5.4.3-2.0.0.xml
-```
-
-Download all layers and recipes:
-
-```
-repo sync
-```
-
-Setup the build for the [i.MX 6QP SABRE
-Board](https://www.nxp.com/design/development-boards/i-mx-evaluation-and-development-boards/sabre-board-for-smart-devices-based-on-the-i-mx-6quadplus-applications-processors:RD-IMX6QP-SABRE) using the imx6qpsabresd machine, and the fsl-imx-wayland distro.
-
-```
-MACHINE=imx6qpsabresd DISTRO=fsl-imx-wayland source ./imx-setup-release.sh -b bld-wayland
-```
-
-Note: You should use a different MACHINE such as imx6dlsabresd if needed. For
-a list of additional machines, see the [i.MX Yocto Project User's
-Guide](https://www.nxp.com/docs/en/user-guide/IMX_YOCTO_PROJECT_USERS_GUIDE.pdf)
-
-Accept the EULA.
-
-Finally you can build the image as follows:
+An initial build environment will be setup for you. Create a simple initial
+test build with the following command:
 
 ```
 bitbake imx-image-core
@@ -92,52 +56,32 @@ bitbake imx-image-core
 NOTE: This process will take at least a half hour on a very fast multi-core
 machine and will use close to 100GB of disk space.
 
-## Workarounds you may need
-
-The 5.4.24-2.1.0 release seems to have an issue building the 'nxp-wlan-sdk'
-package. You may need to disable the machine feature that brings in this
-package by adding the following to 'conf/local.conf' (in the bld-wayland
-directory). The 5.4.3-2.0.0 release seems to build fine without this workaround.
-
-```
-MACHINE_FEATURES_remove = "nxp8987 "
-```
+You can also try 'imx-image-multimedia' for a more full-featured image.
 
 ## Writing an image to eMMC using uuu
 
-### General Process of using UUU
+### Installing UUU
 
-* install a prebuilt uuu or build/install uuu on your machine
-* make a new directory on your machine (i.e. $HOME/imx-uuu-workspace)
-* grab the u-boot.imx and rootfs.wic.bz2 files from the tmp/deploy/images/$MACHINE directory
-* copy 'uuu.auto' from this repo to $YOUR_WORKSPACE_DIRECTORY
-* edit uuu.auto and change the filenames, or create symlinks to the files you
-  downloaded so you don't have to edit uuu.auto in multiple places.
-* power up board in programming mode using dip switches
-* run 'uuu $YOUR_WORKSPACE_DIRECTORY' to program the eMMC. The commands in the uuu.auto
-  file will be executed (if applicable).
-* When uuu is done, remove power to the board and set dip switches to eMMC.
-* Power on board. You can check the build date on the u-boot serial console
-  output to confirm you have built the right stuff!
+Get uuu [here](https://github.com/NXPmicro/mfgtools/releases).
 
-#### Example of using UUU
+#### Using UUU
 
 You can use 'uuu' easily by placing the files from the Yocto deploy directory
-into a directory along with the uuu.auto script file from this repo.
+on the build machine into a local directory.
 
 ```
 cd $MY_WORKSPACE_DIRECTORY
-mkdir imx-5.4.3-2.0.0-imx6qpsabresd
-cd imx-5.4.3-2.0.0-imx6qpsabresd
+mkdir images
+cd images
 ```
 
 If you're running the build container on a VM or another machine, you should
 copy the files you want to write to eMMC now. Otherwise you can just copy the
-files directly from $MY_WORKSPACE_DIRECTORY.
+files directly from $MY_WORKSPACE_DIRECTORY, for example:
 
 ```
-scp $MY_BUILD_MACHINE_HOSTNAME:$MY_WORKSPACE_DIRECTORY/imx-5.4.3-2.0.0/bld-wayland/tmp/deploy/images/imx6qpsabresd/u-boot-sd-optee-2019.04-r0.imx .
-scp $MY_BUILD_MACHINE_HOSTNAME:$MY_WORKSPACE_DIRECTORY/imx-5.4.3-2.0.0/bld-wayland/tmp/deploy/images/imx6qpsabresd/imx-image-core-imx6qpsabresd-20200628215652.rootfs.wic.bz2 .
+scp $MY_BUILD_MACHINE_HOSTNAME:$MY_WORKSPACE_DIRECTORY/imx-os-workspace/bld-wayland/tmp/deploy/images/imx6qpsabresd/u-boot-sd-optee-2019.04-r0.imx .
+scp $MY_BUILD_MACHINE_HOSTNAME:$MY_WORKSPACE_DIRECTORY/imx-os-workspace/bld-wayland/tmp/deploy/images/imx6qpsabresd/imx-image-core-imx6qpsabresd-20200628215652.rootfs.wic.bz2 .
 ```
 
 Extract the compressed disk image file:
@@ -146,25 +90,15 @@ Extract the compressed disk image file:
 bunzip2 imx-image-core-imx6qpsabresd-20200628215652.rootfs.wic.bz2
 ```
 
-Copy the template uuu.auto script from this repo:
-```
-cp $MY_CODE_DIRECTORY/imx-bsp-bootstrap/uuu.auto .
-```
+Run uuu with the board plugged in but not powered on:
 
-Create symlinks so you can use the uuu.auto script without editing it:
 ```
-ln -sf u-boot-sd-optee-2019.04-r0.imx u-boot.bin
-ln -sf imx-image-core-imx6qpsabresd-20200628215652.rootfs.wic disk-image.wic
+sudo uuu -b emmc_all u-boot-sd-2019.04-r0.imx imx-image-multimedia-imx6dlexample-20200922145244.rootfs.wic
 ```
 
 Finally, power on the board and run 'uuu' with the directory you created as an
 argument. Remember to force serial download mode by setting the DIP switches to
 boot from SD card and remove the SD card (for example).
-
-```
-cd ..
-sudo uuu 5.4.3-2.0.0-imx6qpsabresd
-```
 
 If you are monitoring the serial output in a terminal emulator you will be able
 to confirm that the download process is running.
@@ -446,6 +380,18 @@ Build another image for your new patched machine.
 ```
 MACHINE=imx6dlexample bitbake imx-image-core
 ```
+
+## Workarounds you may need
+
+The 5.4.24-2.1.0 release seems to have an issue building the 'nxp-wlan-sdk'
+package. You may need to disable the machine feature that brings in this
+package by adding the following to 'conf/local.conf' (in the bld-wayland
+directory). The 5.4.3-2.0.0 release seems to build fine without this workaround.
+
+```
+MACHINE_FEATURES_remove = "nxp8987 "
+```
+
 
 ## Resources
 
