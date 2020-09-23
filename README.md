@@ -27,27 +27,28 @@ docker build -t centos7-imx-yocto:zeus-latest .
 
 Enter the build container using the following helper script. The first argument
 is a local "workspace" directory that you want to use for build files and
-artifacts. The directory will be made for you if required. Remember that this
-location must have at least 100GB of disk space free.
+artifacts.
 
 ```
 ./enter-build-container.sh $MY_WORKSPACE_DIRECTORY
 ```
 
-For example, if you have a large disk mounted as /data, you may have
+For example, if you have a large disk mounted as /data, you may
 want a yocto workspace directory there and you can use it like so:
 
 ```
 ./enter-build-container.sh /data/yocto/imx-yocto-bsp
 ```
 
-An initial environment should be setup for you. You will be prompted to accept
-a EULA agreement.
+The directory will be made for you if required. Remember that this
+location must have at least 100GB of disk space free!
+
+An initial environment be setup for you. You will be prompted to accept
+a EULA agreement at the end.
 
 ## Building an Official BSP release
 
-An initial build environment will be setup for you. Create a simple initial
-test build with the following command:
+Create a simple test build with the following command:
 
 ```
 bitbake imx-image-core
@@ -56,7 +57,7 @@ bitbake imx-image-core
 NOTE: This process will take at least a half hour on a very fast multi-core
 machine and will use close to 100GB of disk space.
 
-You can also try 'imx-image-multimedia' for a more full-featured image.
+Next, try 'imx-image-multimedia' for a more full-featured image.
 
 ## Writing an image to eMMC using uuu
 
