@@ -19,4 +19,4 @@ if [ ! -d $WORKSPACEDIR ] ; then
 fi
 
 # note: the custom seccomp profile is used to enable strace for debugging build issues
-docker run -v $WORKSPACEDIR:/var/yocto -it --security-opt "seccomp:./custom-seccomp-profile.json" -e IMX_OS_WORKSPACE=$IMX_OS_WORKSPACE centos7-imx-yocto:zeus-latest bash
+docker run -v $WORKSPACEDIR:/var/yocto -it --security-opt "seccomp:./custom-seccomp-profile.json" -e IMX_OS_WORKSPACE=$IMX_OS_WORKSPACE centos7-imx-yocto:warrior-latest bash

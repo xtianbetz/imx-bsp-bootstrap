@@ -24,7 +24,7 @@ CWD=$(pwd)
 if [ ! -d ".repo" ] ; then
 	echo "Initializing repo in $CWD"
 	echo "PATH IS $PATH"
-	repo init -u https://source.codeaurora.org/external/imx/imx-manifest -b imx-linux-zeus -m imx-5.4.3-2.0.0.xml
+	repo init -u https://source.codeaurora.org/external/imx/imx-manifest -b imx-linux-warrior -m imx-4.19.35-1.1.0.xml
 	repo sync
 
 	export MACHINE=imx6qpsabresd

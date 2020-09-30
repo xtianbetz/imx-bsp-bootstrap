@@ -20,7 +20,7 @@ if you want to know more about setting up a build host.
 Build the container with the following command:
 
 ```
-docker build -t centos7-imx-yocto:zeus-latest .
+docker build -t centos7-imx-yocto:warrior-latest .
 ```
 
 ## Enter the build container
@@ -138,7 +138,7 @@ BBFILE_COLLECTIONS += "imx6example"
 BBFILE_PATTERN_imx6example = "^${LAYERDIR}/"
 BBFILE_PRIORITY_imx6example = "5"
 LAYERVERSION_imx6example = "4"
-LAYERSERIES_COMPAT_imx6example = "zeus"
+LAYERSERIES_COMPAT_imx6example = "warrior"
 ```
 
 Finally, edit conf/bblayers.conf and add your layer on the last line:
