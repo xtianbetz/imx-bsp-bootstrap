@@ -26,10 +26,13 @@ if [ ! -d ".repo" ] ; then
 	echo "PATH IS $PATH"
 	repo init -u https://source.codeaurora.org/external/imx/imx-manifest -b imx-linux-warrior -m imx-4.19.35-1.1.0.xml
 	repo sync
+fi
 
+if [ ! -d "bld-${IMX_IMG_TYPE}" ] ;then
+	echo "Setting up release build"
 	export MACHINE=imx6qpsabresd
 	export DISTRO=fsl-imx-wayland
-	. ./imx-setup-release.sh -b bld-${IMX_IMG_TYPE}
+	. ./fsl-setup-release.sh -b bld-${IMX_IMG_TYPE}
 else
 	echo "Using existing environment in $CWD"
 	. setup-environment bld-${IMX_IMG_TYPE}
